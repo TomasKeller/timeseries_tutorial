@@ -1,0 +1,12 @@
+Time Series
+https://campus.datacamp.com/courses/introduction-to-time-series-analysis-in-python/correlation-and-autocorrelation?ex=11
+
+[functions]
+pct_change(periods=1, fill_method='pad')
+Percent change over given number of periods.
+
+diff(periods=1, axis=0)
+1st discrete difference of object
+
+autocorr(lag=1)
+Number of lags to apply before performing autocorrelation.

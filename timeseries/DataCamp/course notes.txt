@@ -1,0 +1,130 @@
+_Chapter 1
+to not be fooled by correlation, look at stock returns not their levels.
+I.e. look at pct_changes() instead
+df['SPX_Ret'] = df['SPX_Prices'].pct_change()
+df['R2000_Ret'] = df['R2000_Prices'].pct_change()
+
+[Autocorrelation]
+Correlation of a time series with a lagged copy of itself
+(Lag-one autocorrelation)
+*Mean Reversion - Negative autocorrelation
+*Momentum, or Trend Following - Positive autocorrelation
+
+df['Return'] = df['Price'].pct_change()
+autocorrelation = df['Return'].autocorr()
+print("The autocorrelation is: ",autocorrelation)
+The autocorrelation is: 0.0567
+
+_Chapter 2
+Autocorrelation Function (ACF): The autocorrelation as a function of the lag
+Equals one at lag-zero
+Interesting information beyond lag-one
+
+plot_acf(x, lags= 20, alpha=0.05)
+Argument alpha sets the width of confidence interval
+5% chance that if true autocorrelation is zero, it will fall outside blue band
+
+If you want no bands on plot, set alpha=1
+
+[White Noise] is a series with:
+Constant mean
+Constant variance
+Zero autocorrelations at all lags
+noise = np.random.normal(loc=0, scale=1, size=500)
+loc = mean, scale = std
+
+plt_acf(noise, lags=50) should be zeros
+
+What is a [Random Walk]?
+Today's Price = Yesterday's Price + Noise
+
+If stock prize are a random walk, then stock returns are white noice
+
+Regression test for random walk
+Test:
+
+H_0: β=1 (random walk)
+H_1​​: β<1 (not random walk)
+
+instead look at diffs and test
+H_0: β=0 (random walk)
+H_1​​: β<0 (not random walk)
+=> Dickey-Fuller test
+If you add more lagged changes on the right hand side, it's the Augmented Dickey-Fuller test
+p < 0.05 reject Null Hypothesis
+
+
+_Chapter 3
+Mathematical Decription of AR(1) Model
+R​t​ =μ+ ϕ * Rt−1 +ϵt
+​​
+Since only one lagged value on right hand side, this is called:
+AR model of order 1, or
+AR(1) model
+AR parameter is ϕ, ϕ = 1 => random walk, ϕ = 0 => white noise. ϕ in (-1,1)
+ϕ <0 : Mean Reversion
+ϕ >0 : Momentum
+autocorr function decays at the rate of ϕ, lag 1 autocorr is ϕ, lag 2 autocorr is ϕ^2 etc
+
+ar = np.array([1, -0.9]): zero lag coef of 1 and ϕ with opposed sign
+
+[Estimating and Forecasting AR model]
+
+mod = ARMA(simulated_data, order=(1,0))
+#this is a AR(1) model as is defined by the order
+mod.fit()
+#can estimate mu and phi
+
+[Choosing the right model]
+The order of an AR(p) model will usually be unknown
+Two techniques to determine order
+--Partial Autocorrelation Function
+--Information criteria
+
+Partial Autocorrelation Funcion (PACF) gives the value to add more phis
+(i.e. increasing p in AR(p))
+
+plot_pacf(x, lags= 20, alpha=0.05)
+
+Information criteria: adjusts goodness-of-fit for number of parameters
+Two popular adjusted goodness-of-fit meaures
+--AIC (Akaike Information Criterion)
+--BIC (Bayesian Information Criterion) low values are good
+
+_Chapter 4
+
+MA parameter is  θ
+Stationary for all values of θ
+
+-Negative θ: One-Period Mean Reversion
+-Positive θ: One-Period Momentum
+-Note: One-period autocorrelation is θ/(1+θ^​2)
+
+-Forecasting with a MA(1) model will have constant values past the one step ahead
+
+
+_Chapter 5
+
+[Cointegration]
+Two series, P_t and Q_t​​ can be random walks (test w Dickey-Fuller adfuller test)
+But the linear combination P_t - c Q_t​​ may not be a random walk!
+Then P_t - c Q_t​​ is forecastable
+
+*Analogy: Dog on a Leash
+
+Two Steps to Test for Cointegration
+1. Regress P_t on Q_t​​ and get slope c
+2. Run Augmented Dickey-Fuller test on P_t - c Q_t​​​​  to test for random walk
+
+Alternatively, can use coint function in statsmodels that combines both steps
+
+from statsmodels.tsa.stattools import coint
+coint(P,Q)
+
+*Analyzing Temperature Data
+1. Test for Random Walk
+2. Take first differences (to transform it to a stationary series)
+3. Compute ACF and PACF
+4. Fit a few AR, MA, and ARMA models
+5. Use Information Criterion to choose best model
+6. Forecast temperature over next 30 years
